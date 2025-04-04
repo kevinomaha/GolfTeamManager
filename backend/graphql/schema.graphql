@@ -1,0 +1,178 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  # Player queries
+  getPlayer(id: ID!): Player
+  listPlayers: [Player]
+  getPlayerByEmail(email: String!): Player
+  
+  # Schedule queries
+  getSchedule(id: ID!): Schedule
+  listSchedules: [Schedule]
+  getSchedulesByDate(date: String!): [Schedule]
+  getPlayerSchedules(playerId: ID!): [Schedule]
+  
+  # Swap request queries
+  getSwapRequest(id: ID!): SwapRequest
+  listSwapRequests: [SwapRequest]
+  getSwapRequestsByRequestor(requestorId: ID!): [SwapRequest]
+  getSwapRequestsByTarget(targetId: ID!): [SwapRequest]
+  getSwapRequestsByStatus(status: SwapRequestStatus!): [SwapRequest]
+  
+  # Score queries
+  getScore(id: ID!): Score
+  listScores: [Score]
+  getScoresByPlayer(playerId: ID!): [Score]
+  getScoresBySchedule(scheduleId: ID!): [Score]
+}
+
+type Mutation {
+  # Player mutations
+  createPlayer(input: CreatePlayerInput!): Player
+  updatePlayer(id: ID!, input: UpdatePlayerInput!): Player
+  
+  # Schedule mutations
+  createSchedule(input: CreateScheduleInput!): Schedule
+  updateSchedule(id: ID!, input: UpdateScheduleInput!): Schedule
+  
+  # Swap request mutations
+  createSwapRequest(input: CreateSwapRequestInput!): SwapRequest
+  updateSwapRequest(id: ID!, input: UpdateSwapRequestInput!): SwapRequest
+  acceptSwapRequest(id: ID!): SwapRequest
+  rejectSwapRequest(id: ID!): SwapRequest
+  adminOverrideSwapRequest(id: ID!, approved: Boolean!): SwapRequest
+  
+  # Score mutations
+  createScore(input: CreateScoreInput!): Score
+  updateScore(id: ID!, input: UpdateScoreInput!): Score
+}
+
+# Player type and inputs
+type Player {
+  id: ID!
+  email: String!
+  name: String!
+  phone: String
+  weeksScheduled: Int
+  isAdmin: Boolean
+  totalWins: Int
+  totalLosses: Int
+}
+
+input CreatePlayerInput {
+  email: String!
+  name: String!
+  phone: String
+  isAdmin: Boolean
+}
+
+input UpdatePlayerInput {
+  name: String
+  phone: String
+  weeksScheduled: Int
+  isAdmin: Boolean
+  totalWins: Int
+  totalLosses: Int
+}
+
+# Schedule type and inputs
+type Schedule {
+  id: ID!
+  date: String!
+  time: String!
+  course: String!
+  players: [Player]
+  notes: String
+  isCompleted: Boolean
+}
+
+input CreateScheduleInput {
+  date: String!
+  time: String!
+  course: String!
+  playerIds: [ID!]
+  notes: String
+  isCompleted: Boolean
+}
+
+input UpdateScheduleInput {
+  date: String
+  time: String
+  course: String
+  playerIds: [ID]
+  notes: String
+  isCompleted: Boolean
+}
+
+# Swap request type and inputs
+enum SwapRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  ADMIN_OVERRIDE
+}
+
+type SwapRequest {
+  id: ID!
+  requestor: Player!
+  requestorWeek: Schedule!
+  target: Player!
+  targetWeek: Schedule!
+  proposedDate: String!
+  reason: String
+  status: SwapRequestStatus!
+  createdAt: String!
+}
+
+input CreateSwapRequestInput {
+  requestorId: ID!
+  requestorWeekId: ID!
+  targetId: ID!
+  targetWeekId: ID!
+  proposedDate: String!
+  reason: String
+}
+
+input UpdateSwapRequestInput {
+  status: SwapRequestStatus
+  reason: String
+}
+
+# Score type and inputs
+enum ScoreResult {
+  WIN
+  LOSS
+  TIE
+}
+
+type Score {
+  id: ID!
+  schedule: Schedule!
+  player: Player!
+  score: Int!
+  result: ScoreResult!
+  notes: String
+}
+
+input CreateScoreInput {
+  scheduleId: ID!
+  playerId: ID!
+  score: Int!
+  result: ScoreResult!
+  notes: String
+}
+
+input UpdateScoreInput {
+  score: Int
+  result: ScoreResult
+  notes: String
+}
+
+# Directives
+directive @aws_auth(cognito_groups: [String!]) on FIELD_DEFINITION
+directive @aws_api_key on FIELD_DEFINITION
+directive @aws_iam on FIELD_DEFINITION
+directive @aws_cognito_user_pools on FIELD_DEFINITION
