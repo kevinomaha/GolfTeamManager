@@ -25,7 +25,7 @@ export class ApiStack extends cdk.Stack {
     // Create AppSync API
     const api = new appsync.GraphqlApi(this, 'GolfLeagueAPI', {
       name: 'GolfLeagueManagerAPI',
-      schema: appsync.SchemaFile.fromAsset(path.join(__dirname, '../graphql/schema.graphql')),
+      definition: appsync.Definition.fromFile(path.join(__dirname, '../graphql/schema.graphql')),
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: appsync.AuthorizationType.USER_POOL,
